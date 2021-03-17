@@ -5,6 +5,7 @@ library(purrr)
 N_ROWS <- 5
 ITER <- 10
 
+set.seed(100)
 get_data <- function(iter_num){
     tibble::tibble(
         user = stringi::stri_rand_strings(N_ROWS, 10),
