@@ -1,0 +1,83 @@
+---
+title: "Synapse Demo - File Uploads"
+author: "Aryton Tediarjo"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+This R markdown is used for showcasing basic interaction with Synapse using RStudio. It will cover on how to utilize the Synapse interface to upload files.
+
+## Import Libraries
+```{r warning=FALSE, message=FALSE}
+library(data.table)
+library(tidyverse)
+library(synapser)
+library(here)
+synLogin()
+source(file.path(here::here(), "R/generate_samples.R"))
+```
+
+## Global Variables
+```{r}
+SYNAPSE_PARENT_ID <- "syn25254130" # where you will be saving all your files
+FILEPATH <- file.path(here(), "data/sample_1.tsv")
+```
+
+
+## Part 1: Uploading to Synapse (1 File)
+
+### 1. Read Arbitrary Data
+```{r warning=FALSE}
+data <- fread(FILEPATH) %>% 
+    tibble::as_tibble(.) %>%
+    dplyr::select(-V1)
+data
+```
+
+### 2. Create File Entity Locally
+```{r}
+file_entity <- synapser::File(FILEPATH, parentId = SYNAPSE_PARENT_ID)
+file_entity
+```
+
+### 3. Store to Synapse
+```{r}
+synStore(file_entity)
+```
+
+## Part 2: Files Versioning, Provenance
+
+Let's say you want to add more data into the previously stored dataframe, Synapse will provide you the capability to version your files everytime you update it so that you can always access your previous data.
+
+### a. Versioning
+```{r}
+data_new <- data %>% 
+    add_row(tibble_row(
+        user = "jane doe", 
+        createdOn = lubridate::as_date(lubridate::now()),
+        x = 4, y = 0))
+data_new %>% 
+    write.table(., FILEPATH, row.names = FALSE)
+```
+
+```{r echo=FALSE,warning=FALSE,message=FALSE,error=FALSE, results='hide'}
+new_file_entity <- synapser::File(FILEPATH, parentId = SYNAPSE_PARENT_ID)
+store_to_synapse <- synStore(new_file_entity)
+```
+
+### b. Files Provenance
+```{r}
+activity = synapser::Activity(
+    "generating demo data",
+    used = c("syn23555388"),
+    executed = c()
+)
+
+add_provenance <- synStore(new_file_entity, activity = activity)
+```
+
+
+
