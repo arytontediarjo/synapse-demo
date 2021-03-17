@@ -3,9 +3,9 @@ title: "Synapse Demo - File Uploads"
 author: "Aryton Tediarjo"
 date: "`r Sys.Date()`"
 output:
+  pdf_document: default
   html_document:
     df_print: paged
-  pdf_document: default
 ---
 
 This R markdown is used for showcasing basic interaction with Synapse using RStudio. It will cover on how to utilize our Synapse R client to do basic uploading/downloading files.
@@ -110,13 +110,15 @@ This part will cover how to do bulk upload and bulk download to Synapse. It will
 Documentation can be found here: https://docs.synapse.org/articles/uploading_in_bulk.html
 
 ### Bulk Upload
+We will use a "manifest.tsv" (with pre-defined format requirement set in the documentation) file to bulk upload all your files.
 ```{r}
-synapserutils::syncToSynapse("manifest.tsv")
+bulk_upload_data <- synapserutils::syncToSynapse("manifest.tsv")
 ```
 
 ### Bulk Download
+We can also sync what has been downloaded using this command below
 ```{r}
-synapserutils::syncFromSynapse("syn25257395")
+bulk_download_data <- synapserutils::syncFromSynapse("syn25257395")
 ```
 
 
