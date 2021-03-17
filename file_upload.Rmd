@@ -15,40 +15,38 @@ This R markdown is used for showcasing basic interaction with Synapse using RStu
 library(data.table)
 library(tidyverse)
 library(synapser)
-library(here)
+library(synapserutils)
 synLogin()
-source(file.path(here::here(), "R/generate_samples.R"))
 ```
 
 ## Global Variables
 ```{r}
-SYNAPSE_PARENT_ID <- "syn25254130" # where you will be saving all your files
-FILEPATH <- file.path(here(), "data/sample_1.tsv")
+SYNAPSE_PARENT_ID <- "syn25257185" # where you will be saving all your files
+FILEPATH <- file.path("data", "sample_1.tsv")
 ```
 
 
 ## Part 1: Uploading to Synapse (1 File)
 
-### 1. Read Arbitrary Data
+### Step 1. Read Arbitrary Data
 ```{r warning=FALSE}
 data <- fread(FILEPATH) %>% 
-    tibble::as_tibble(.) %>%
-    dplyr::select(-V1)
+    tibble::as_tibble(.)
 data
 ```
 
-### 2. Create File Entity Locally
+### Step 2. Create File Entity Locally
 ```{r}
 file_entity <- synapser::File(FILEPATH, parentId = SYNAPSE_PARENT_ID)
 file_entity
 ```
 
-### 3. Store to Synapse
+### Step 3. Store to Synapse
 ```{r}
 synStore(file_entity)
 ```
 
-## Part 2: Files Versioning, Provenance
+## Part 2: Files Versioning, Provenance, Annotations
 
 Let's say you want to add more data into the previously stored dataframe, Synapse will provide you the capability to version your files everytime you update it so that you can always access your previous data.
 
@@ -60,7 +58,9 @@ data_new <- data %>%
         createdOn = lubridate::as_date(lubridate::now()),
         x = 4, y = 0))
 data_new %>% 
-    write.table(., FILEPATH, row.names = FALSE)
+    write.table(., FILEPATH, sep = "\t",
+                row.names = FALSE, 
+                quote = FALSE)
 ```
 
 ```{r echo=FALSE,warning=FALSE,message=FALSE,error=FALSE, results='hide'}
@@ -70,13 +70,44 @@ store_to_synapse <- synStore(new_file_entity)
 
 ### b. Files Provenance
 ```{r}
+USED_SYNAPSE_ID <- "syn23555388"
+USED_NB_GIT_URL <- "https://github.com/arytontediarjo/synapse-demo/blob/main/file_upload.Rmd"
+
 activity = synapser::Activity(
     "generating demo data",
-    used = c("syn23555388"),
-    executed = c()
+    used = c(USED_SYNAPSE_ID),
+    executed = c(USED_NB_GIT_URL)
 )
 
-add_provenance <- synStore(new_file_entity, activity = activity)
+store_to_synapse <- synStore(new_file_entity, activity = activity)
+```
+
+
+### c. Annotations
+```{r}
+# try retrieving annotation
+synGetAnnotations(store_to_synapse$properties$id)
+```
+
+```{r}
+#' set annotations
+synSetAnnotations(
+    store_to_synapse$properties$id, 
+    list("annotatedBy" = "Aryton"))
+```
+
+## Part 3: Multi-File Uploads
+This part will cover how to do bulk upload and bulk download to Synapse. It will use 'synapserutils' which is used for some utility use-cases built on top of 'synapser'
+Documentation can be found here: https://docs.synapse.org/articles/uploading_in_bulk.html
+
+### Bulk Upload
+```{r}
+synapserutils::syncToSynapse("manifest.tsv")
+```
+
+### Bulk Download
+```{r}
+synapserutils::syncFromSynapse("syn25257395")
 ```
 
 
