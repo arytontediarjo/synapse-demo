@@ -82,8 +82,8 @@ store_to_synapse <- synStore(new_file_entity)
 USED_SYNAPSE_ID <- "syn23555388"
 USED_NB_GIT_URL <- "https://github.com/arytontediarjo/synapse-demo/blob/main/file_upload.Rmd"
 
-activity = synapser::Activity(
-    "generating demo data",
+activity <- synapser::Activity(
+    name = "generating demo data",
     used = c(USED_SYNAPSE_ID),
     executed = c(USED_NB_GIT_URL)
 )
@@ -120,6 +120,3 @@ We can also sync what has been downloaded using this command below
 ```{r}
 bulk_download_data <- synapserutils::syncFromSynapse("syn25257395")
 ```
-
-
-

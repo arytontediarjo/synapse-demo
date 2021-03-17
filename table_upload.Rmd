@@ -98,8 +98,13 @@ tbl_files <- synDownloadTableColumns(tbl_entity, columns = cols) %>%
     tibble::enframe(.) %>%
     dplyr::select(fileHandleId = name, filePath = value)
 
-tbl_data %>% 
+result <- tbl_data %>% 
   dplyr::inner_join(tbl_files, by = c("fileHandleId"))
+
+
+result %>%
+    dplyr::select("recordId", "healthCode", "createdOn","filePath") %>%
+    slice(1:5)
 ```
 
 
@@ -118,13 +123,16 @@ parse_file_attachment <- function(synId, cols){
   tbl_files <- synDownloadTableColumns(tbl_entity, columns = cols) %>% 
     tibble::enframe(.) %>%
     dplyr::select(fileHandleId = name, filePath = value)
-
+  
+  #' printing head and filepaths
   tbl_data %>% 
     dplyr::inner_join(tbl_files, by = c("fileHandleId"))
 }
 
 parse_file_attachment(synId = "syn25173598", 
-                      cols = c("data.json"))
+                      cols = c("data.json")) %>%
+    dplyr::select("recordId", "healthCode", "createdOn","filePath") %>%
+    slice(1:5)
 ```
 
 
