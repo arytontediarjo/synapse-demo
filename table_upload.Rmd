@@ -1,0 +1,87 @@
+---
+title: "Synapse Demo - Table Uploads"
+author: "Aryton Tediarjo"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+This R markdown is used for showcasing basic interaction with Synapse using RStudio. It will cover on how to utilize our Synapse R client to create table entity, which is a SQL query-able tables in Synapse interface. 
+
+Full Documentation: https://r-docs.synapse.org/articles/tables.html
+
+
+## Import Libraries
+```{r warning=FALSE, message=FALSE}
+library(data.table)
+library(tidyverse)
+library(synapser)
+library(synapserutils)
+synLogin()
+```
+
+## Global Variables
+```{r}
+SYNAPSE_PROJECT_ID <- "syn20816722" # where you will be saving all your files
+FILEPATH_1 <- file.path("data", "sample_2.tsv")
+FILEPATH_2 <- file.path("data", "sample_3.tsv")
+TABLE_RESULTS <- "Synapse Demo Table"
+```
+
+```{r}
+data <- fread(FILEPATH_1) %>% tibble::as_tibble()
+data
+```
+
+### QnD storing table
+A quick way to store table is to use available wrapper from Synapse R Client. It will infer data type of each column in the schema.
+```{r}
+#' wrapper create table function
+table <- synapser::synBuildTable(
+    TABLE_RESULTS, SYNAPSE_PROJECT_ID, data
+)
+
+#' store to synapse
+table <- synStore(table)
+```
+
+### Custom Columns Types
+A more manual way is to define each of the column schema individually.
+```{r}
+#' delete table
+synapser::synDelete(table$tableId)
+
+#' set custom columns
+cols <- list(
+    Column(name = "user", columnType = "STRING", maximumSize = 20),
+    Column(name = "createdOn", columnType = "DATE"),
+    Column(name = "x", columnType = "DOUBLE"),
+    Column(name = "y", columnType = "DOUBLE"))
+
+# set schema entity
+schema <- Schema(name = TABLE_RESULTS, 
+                 columns = cols, 
+                 parent = SYNAPSE_PROJECT_ID)
+
+#' recreate table entity
+table <- Table(schema, data)
+table <- synStore(table)
+```
+
+### Appending new rows to Synapse Tables
+Appending new data can be achieved by storing a new data (given matching columns) to the previous table id.
+```{r}
+#' what is the table Id? 
+tableId_in_synapse <- table$tableId
+
+#' read data for appending
+append_data <- fread(FILEPATH_2) %>% 
+    tibble::as_tibble()
+
+#' append to table
+synStore(Table(tableId_in_synapse, append_data))
+```
+
+
