@@ -3,9 +3,11 @@ library(synapser)
 library(data.table)
 library(here)
 
+PARENT_ID <- "syn25258506"
+
 manifest <- tibble::tibble(
     path = purrr::map_chr(list.files("data"), ~(glue::glue(file.path(here(),"data",.x)))),
-    parent = "syn25257395",
+    parent = PARENT_ID,
     name = list.files("data"),
     used = "syn23555388",
     executed = "https://github.com/arytontediarjo/synapse-demo/blob/main/Notebook/file_upload.Rmd",

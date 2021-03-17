@@ -85,3 +85,46 @@ synStore(Table(tableId_in_synapse, append_data))
 ```
 
 
+### Querying Data Examples
+```{r}
+cols <- c("data.json")
+tbl_entity <- synTableQuery("SELECT * FROM syn25173598")
+tbl_data <- tbl_entity$asDataFrame() %>%
+  tidyr::pivot_longer(cols = all_of(cols), 
+                      names_to = "column", 
+                      values_to = "fileHandleId")
+
+tbl_files <- synDownloadTableColumns(tbl_entity, columns = cols) %>% 
+    tibble::enframe(.) %>%
+    dplyr::select(fileHandleId = name, filePath = value)
+
+tbl_data %>% 
+  dplyr::inner_join(tbl_files, by = c("fileHandleId"))
+```
+
+
+### Extras: Useful code snippet to parse file attachment in Synapse Table
+```{r}
+#' Function to parse file attachment
+#' @param synId the synapse table Id
+#' @param cols the column of file attachment in table
+parse_file_attachment <- function(synId, cols){
+  tbl_entity <- synTableQuery(glue::glue("SELECT * FROM {synId}"))
+  tbl_data <- tbl_entity$asDataFrame() %>%
+    tidyr::pivot_longer(cols = all_of(cols), 
+                        names_to = "column", 
+                        values_to = "fileHandleId")
+
+  tbl_files <- synDownloadTableColumns(tbl_entity, columns = cols) %>% 
+    tibble::enframe(.) %>%
+    dplyr::select(fileHandleId = name, filePath = value)
+
+  tbl_data %>% 
+    dplyr::inner_join(tbl_files, by = c("fileHandleId"))
+}
+
+parse_file_attachment(synId = "syn25173598", 
+                      cols = c("data.json"))
+```
+
+
