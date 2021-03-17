@@ -8,7 +8,7 @@ output:
   pdf_document: default
 ---
 
-This R markdown is used for showcasing basic interaction with Synapse using RStudio. It will cover on how to utilize the Synapse interface to upload files.
+This R markdown is used for showcasing basic interaction with Synapse using RStudio. It will cover on how to utilize our Synapse R client to do basic uploading/downloading files.
 
 ## Import Libraries
 ```{r warning=FALSE, message=FALSE}
@@ -48,7 +48,16 @@ synStore(file_entity)
 
 ## Part 2: Files Versioning, Provenance, Annotations
 
+File Entity Components:
+
+Versioning: 
 Let's say you want to add more data into the previously stored dataframe, Synapse will provide you the capability to version your files everytime you update it so that you can always access your previous data.
+
+Provenance:
+You can also track the sources of how the data is generated
+
+Annotations:
+Key-Value pair attached to a data
 
 ### a. Versioning
 ```{r}
